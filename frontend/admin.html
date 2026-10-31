@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TurfBook - Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+
+    <header>
+
+        <h1>⚽ TurfBook Admin</h1>
+
+        <nav>
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="index.html#turfs">
+                Turfs
+            </a>
+
+            <a href="index.html#myBookingsSection">
+                My Bookings
+            </a>
+
+            <button id="adminLogoutBtn" style="
+                display:none;
+                margin-left:15px;
+                padding:8px 15px;
+                border:none;
+                border-radius:6px;
+                background:#dc3545;
+                color:white;
+                cursor:pointer;
+            ">
+                Logout
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <main class="admin-container">
+
+        <h2>
+            📊 Admin Dashboard
+        </h2>
+
+        <p>
+            Manage users and monitor turf bookings.
+        </p>
+
+
+        <!-- ADMIN INFORMATION -->
+
+        <div id="adminInfo" style="
+            margin:20px auto;
+            padding:15px;
+            max-width:600px;
+            background:#e8f5e9;
+            border-radius:10px;
+            font-weight:bold;
+        ">
+        </div>
+
+
+        <!-- DASHBOARD CARDS -->
+
+        <div class="dashboard-cards">
+
+            <div class="dashboard-card">
+
+                <h3>
+                    👥 Total Users
+                </h3>
+
+                <p id="totalUsers">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <h3>
+                    📅 Total Bookings
+                </h3>
+
+                <p id="totalBookings">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <h3>
+                    ✅ Confirmed
+                </h3>
+
+                <p id="confirmedBookings">
+                    0
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- REGISTERED USERS -->
+
+        <section class="admin-section">
+
+            <h2>
+                👥 Registered Users
+            </h2>
+
+            <div id="usersList">
+
+                <p>
+                    Loading users...
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ALL BOOKINGS -->
+
+        <section class="admin-section">
+
+            <h2>
+                📅 All Bookings
+            </h2>
+
+
+            <!-- SEARCH AND FILTER BOX -->
+
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:12px;
+                margin:20px 0;
+                box-shadow:0 3px 10px rgba(0,0,0,0.12);
+            ">
+
+                <!-- SEARCH -->
+
+                <input type="text" id="bookingSearch" placeholder="🔎 Search customer name or email..." style="
+                    width:100%;
+                    padding:12px;
+                    border:1px solid #ccc;
+                    border-radius:8px;
+                    box-sizing:border-box;
+                    margin-bottom:12px;
+                    font-size:15px;
+                ">
+
+
+                <!-- STATUS FILTER -->
+
+                <select id="statusFilter" style="
+                    width:100%;
+                    padding:12px;
+                    border:1px solid #ccc;
+                    border-radius:8px;
+                    margin-bottom:12px;
+                    font-size:15px;
+                ">
+
+                    <option value="all">
+                        📌 All Status
+                    </option>
+
+                    <option value="Confirmed">
+                        ✅ Confirmed
+                    </option>
+
+                    <option value="Cancelled">
+                        ❌ Cancelled
+                    </option>
+
+                </select>
+
+
+                <!-- TURF FILTER -->
+
+                <select id="turfFilter" style="
+                    width:100%;
+                    padding:12px;
+                    border:1px solid #ccc;
+                    border-radius:8px;
+                    margin-bottom:12px;
+                    font-size:15px;
+                ">
+
+                    <option value="all">
+                        ⚽ All Turfs
+                    </option>
+
+                    <option value="City Sports Turf">
+                        City Sports Turf
+                    </option>
+
+                    <option value="Green Play Turf">
+                        Green Play Turf
+                    </option>
+
+                    <option value="Champions Turf">
+                        Champions Turf
+                    </option>
+
+                </select>
+
+
+                <!-- RESET -->
+
+                <button type="button" onclick="resetBookingFilters()" style="
+                    width:100%;
+                    padding:12px;
+                    border:none;
+                    border-radius:8px;
+                    background:#198754;
+                    color:white;
+                    font-size:15px;
+                    cursor:pointer;
+                ">
+                    🔄 Reset Filters
+                </button>
+
+            </div>
+
+
+            <!-- BOOKING LIST -->
+
+            <div id="adminBookings">
+
+                <p>
+                    Loading bookings...
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            © 2026 TurfBook. All Rights Reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script>
+
+
+        // =========================================
+        // API URL
+        // =========================================
+
+        const API_URL =
+            "http://localhost:5000/api";
+
+
+
+        // =========================================
+        // ADMIN LOGIN DATA
+        // =========================================
+
+        const token =
+            localStorage.getItem(
+                "adminToken"
+            );
+
+
+        const adminUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "adminUser"
+                )
+            );
+
+
+
+        // =========================================
+        // CHECK ADMIN LOGIN
+        // =========================================
+
+        if (
+            !token ||
+            !adminUser
+        ) {
+
+            alert(
+                "Please login as administrator."
+            );
+
+            window.location.href =
+                "admin-login.html";
+
+        }
+
+
+
+        // =========================================
+        // ADMIN INFORMATION
+        // =========================================
+
+        if (adminUser) {
+
+            document.getElementById(
+                "adminInfo"
+            ).innerHTML =
+
+                `
+        👋 Welcome, ${adminUser.name}
+        <br>
+        📧 ${adminUser.email}
+        <br>
+        🔐 Role: ${adminUser.role}
+        `;
+
+
+            document.getElementById(
+                "adminLogoutBtn"
+            ).style.display =
+                "inline-block";
+
+        }
+
+
+
+        // =========================================
+        // ADMIN API REQUEST
+        // =========================================
+
+        async function adminRequest(url) {
+
+            const response =
+                await fetch(
+                    url,
+                    {
+
+                        method: "GET",
+
+                        headers: {
+
+                            "Authorization":
+                                `Bearer ${token}`,
+
+                            "Content-Type":
+                                "application/json"
+
+                        }
+
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+
+                localStorage.removeItem(
+                    "adminToken"
+                );
+
+                localStorage.removeItem(
+                    "adminUser"
+                );
+
+                alert(
+                    "Admin session expired. Please login again."
+                );
+
+                window.location.href =
+                    "admin-login.html";
+
+                return null;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    "Request failed"
+                );
+
+            }
+
+
+            return data;
+
+        }
+
+
+
+        // =========================================
+        // LOAD DASHBOARD
+        // =========================================
+
+        async function loadDashboard() {
+
+            try {
+
+                const data =
+                    await adminRequest(
+                        `${API_URL}/admin/dashboard`
+                    );
+
+
+                if (!data) {
+                    return;
+                }
+
+
+                document.getElementById(
+                    "totalUsers"
+                ).textContent =
+                    data.totalUsers;
+
+
+                document.getElementById(
+                    "totalBookings"
+                ).textContent =
+                    data.totalBookings;
+
+
+                document.getElementById(
+                    "confirmedBookings"
+                ).textContent =
+                    data.confirmedBookings;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Dashboard Error:",
+                    error
+                );
+
+                alert(
+                    "Unable to load dashboard."
+                );
+
+            }
+
+        }
+
+
+
+        // =========================================
+        // LOAD USERS
+        // =========================================
+
+        async function loadUsers() {
+
+            try {
+
+                const data =
+                    await adminRequest(
+                        `${API_URL}/admin/users`
+                    );
+
+
+                if (!data) {
+                    return;
+                }
+
+
+                const usersList =
+                    document.getElementById(
+                        "usersList"
+                    );
+
+
+                if (
+                    !data.users ||
+                    data.users.length === 0
+                ) {
+
+                    usersList.innerHTML =
+                        "<p>No users found.</p>";
+
+                    return;
+
+                }
+
+
+                usersList.innerHTML =
+                    "";
+
+
+                data.users.forEach(
+                    (user, index) => {
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        card.className =
+                            "admin-item";
+
+
+                        card.innerHTML = `
+
+                    <h3>
+                        ${index + 1}.
+                        ${user.name}
+                    </h3>
+
+                    <p>
+                        Email:
+                        ${user.email}
+                    </p>
+
+                    <p>
+                        Role:
+                        ${user.role || "user"}
+                    </p>
+
+                    <p>
+                        User ID:
+                        ${user._id}
+                    </p>
+
+                `;
+
+
+                        usersList.appendChild(
+                            card
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Users Error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+
+        // =========================================
+        // STORE ALL BOOKINGS
+        // =========================================
+
+        let allBookings = [];
+
+
+
+        // =========================================
+        // LOAD ALL BOOKINGS
+        // =========================================
+
+        async function loadAdminBookings() {
+
+            try {
+
+                const data =
+                    await adminRequest(
+                        `${API_URL}/admin/bookings`
+                    );
+
+
+                if (!data) {
+                    return;
+                }
+
+
+                allBookings =
+                    data.bookings || [];
+
+
+                displayBookings(
+                    allBookings
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Bookings Error:",
+                    error
+                );
+
+
+                document.getElementById(
+                    "adminBookings"
+                ).innerHTML =
+
+                    `
+            <p>
+                Unable to load bookings.
+            </p>
+            `;
+
+            }
+
+        }
+
+
+
+        // =========================================
+        // DISPLAY BOOKINGS
+        // =========================================
+
+        function displayBookings(
+            bookings
+        ) {
+
+            const bookingList =
+                document.getElementById(
+                    "adminBookings"
+                );
+
+
+            if (
+                !bookings ||
+                bookings.length === 0
+            ) {
+
+                bookingList.innerHTML =
+
+                    `
+            <p>
+                No bookings found.
+            </p>
+            `;
+
+                return;
+
+            }
+
+
+            bookingList.innerHTML =
+                "";
+
+
+            bookings.forEach(
+                (booking, index) => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "admin-item";
+
+
+                    card.innerHTML = `
+
+                <h3>
+                    📅 Booking #${index + 1}
+                </h3>
+
+
+                <p>
+                    ⚽
+                    <strong>
+                        Turf:
+                    </strong>
+
+                    ${booking.turfName}
+                </p>
+
+
+                <p>
+                    👤
+                    <strong>
+                        Customer:
+                    </strong>
+
+                    ${booking.customerName}
+                </p>
+
+
+                <p>
+                    📧
+                    <strong>
+                        Email:
+                    </strong>
+
+                    ${booking.customerEmail}
+                </p>
+
+
+                <p>
+                    📅
+                    <strong>
+                        Date:
+                    </strong>
+
+                    ${booking.date}
+                </p>
+
+
+                <p>
+                    🕐
+                    <strong>
+                        Time:
+                    </strong>
+
+                    ${booking.timeSlot}
+                </p>
+
+
+                <p>
+                    📌
+                    <strong>
+                        Status:
+                    </strong>
+
+                    <strong>
+                        ${booking.status}
+                    </strong>
+                </p>
+
+
+                ${booking.status ===
+                            "Confirmed"
+
+                            ?
+
+                            `
+
+                    <button
+                        onclick="cancelBooking('${booking._id}')"
+                        style="
+                            margin-top:15px;
+                            padding:10px 18px;
+                            border:none;
+                            border-radius:7px;
+                            background:#dc3545;
+                            color:white;
+                            cursor:pointer;
+                            font-weight:bold;
+                        "
+                    >
+                        ❌ Cancel Booking
+                    </button>
+
+                    `
+
+                            :
+
+                            `
+
+                    <p
+                        style="
+                            color:#dc3545;
+                            font-weight:bold;
+                            margin-top:15px;
+                        "
+                    >
+                        ❌ Booking Cancelled
+                    </p>
+
+                    `
+                        }
+
+            `;
+
+
+                    bookingList.appendChild(
+                        card
+                    );
+
+                }
+            );
+
+        }
+
+
+
+        // =========================================
+        // FILTER BOOKINGS
+        // =========================================
+
+        function filterBookings() {
+
+            const search =
+                document
+                    .getElementById(
+                        "bookingSearch"
+                    )
+                    .value
+                    .toLowerCase()
+                    .trim();
+
+
+            const status =
+                document
+                    .getElementById(
+                        "statusFilter"
+                    )
+                    .value;
+
+
+            const turf =
+                document
+                    .getElementById(
+                        "turfFilter"
+                    )
+                    .value;
+
+
+            const filteredBookings =
+                allBookings.filter(
+                    function (booking) {
+
+
+                        // SEARCH
+
+                        const matchesSearch =
+
+                            booking.customerName
+                                .toLowerCase()
+                                .includes(search)
+
+                            ||
+
+                            booking.customerEmail
+                                .toLowerCase()
+                                .includes(search);
+
+
+
+                        // STATUS
+
+                        const matchesStatus =
+
+                            status === "all"
+
+                            ||
+
+                            booking.status ===
+                            status;
+
+
+
+                        // TURF
+
+                        const matchesTurf =
+
+                            turf === "all"
+
+                            ||
+
+                            booking.turfName ===
+                            turf;
+
+
+
+                        return (
+                            matchesSearch &&
+                            matchesStatus &&
+                            matchesTurf
+                        );
+
+                    }
+                );
+
+
+            displayBookings(
+                filteredBookings
+            );
+
+        }
+
+
+
+        // =========================================
+        // RESET FILTERS
+        // =========================================
+
+        function resetBookingFilters() {
+
+            document.getElementById(
+                "bookingSearch"
+            ).value =
+                "";
+
+
+            document.getElementById(
+                "statusFilter"
+            ).value =
+                "all";
+
+
+            document.getElementById(
+                "turfFilter"
+            ).value =
+                "all";
+
+
+            displayBookings(
+                allBookings
+            );
+
+        }
+
+
+
+        // =========================================
+        // CANCEL BOOKING
+        // =========================================
+
+        async function cancelBooking(
+            bookingId
+        ) {
+
+
+            const confirmation =
+                confirm(
+                    "Are you sure you want to cancel this booking?"
+                );
+
+
+            if (!confirmation) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+
+                        `${API_URL}/admin/bookings/${bookingId}/cancel`,
+
+                        {
+
+                            method:
+                                "PATCH",
+
+                            headers: {
+
+                                "Authorization":
+                                    `Bearer ${token}`,
+
+                                "Content-Type":
+                                    "application/json"
+
+                            }
+
+                        }
+
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+
+                        data.message ||
+                        "Unable to cancel booking"
+
+                    );
+
+                }
+
+
+                alert(
+                    data.message ||
+                    "Booking cancelled successfully."
+                );
+
+
+                loadDashboard();
+
+                loadAdminBookings();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Cancel Booking Error:",
+                    error
+                );
+
+
+                alert(
+                    error.message ||
+                    "Unable to cancel booking."
+                );
+
+            }
+
+        }
+
+
+
+        // =========================================
+        // SEARCH EVENT
+        // =========================================
+
+        document
+            .getElementById(
+                "bookingSearch"
+            )
+            .addEventListener(
+                "input",
+                filterBookings
+            );
+
+
+
+        // =========================================
+        // STATUS FILTER EVENT
+        // =========================================
+
+        document
+            .getElementById(
+                "statusFilter"
+            )
+            .addEventListener(
+                "change",
+                filterBookings
+            );
+
+
+
+        // =========================================
+        // TURF FILTER EVENT
+        // =========================================
+
+        document
+            .getElementById(
+                "turfFilter"
+            )
+            .addEventListener(
+                "change",
+                filterBookings
+            );
+
+
+
+        // =========================================
+        // ADMIN LOGOUT
+        // =========================================
+
+        document
+            .getElementById(
+                "adminLogoutBtn"
+            )
+            .addEventListener(
+                "click",
+                function () {
+
+
+                    localStorage.removeItem(
+                        "adminToken"
+                    );
+
+
+                    localStorage.removeItem(
+                        "adminUser"
+                    );
+
+
+                    alert(
+                        "Admin logged out successfully."
+                    );
+
+
+                    window.location.href =
+                        "admin-login.html";
+
+                }
+            );
+
+
+
+        // =========================================
+        // LOAD EVERYTHING
+        // =========================================
+
+        if (
+            token &&
+            adminUser
+        ) {
+
+            loadDashboard();
+
+            loadUsers();
+
+            loadAdminBookings();
+
+        }
+
+
+    </script>
+
+
+</body>
+
+</html>
