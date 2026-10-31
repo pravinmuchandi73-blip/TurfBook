@@ -2,7 +2,7 @@
 // TURFBOOK - FRONTEND SCRIPT
 // ============================================
 
-const API_URL = "http://10.204.132.243:5000/api";
+const API_URL = "https://turfbook-66qc.onrender.com/api";
 
 // ============================================
 // LOCAL STORAGE
